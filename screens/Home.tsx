@@ -5,8 +5,8 @@ import { socket } from "../App"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { addFavorite } from "../src/store/actions"
 import { useContext } from "react"
-import favoriteContext from "../src/context/favoriteContext"
 import { Crypto } from "../models/crypto"
+import { getData, storeData } from "../storage"
 
 //navigation uyarısını silmek için any yazdık
 const Home = ({ navigation }:{navigation:any}) => {
@@ -24,8 +24,17 @@ const Home = ({ navigation }:{navigation:any}) => {
     navigation.navigate("Detail", {id: id});
   };
 
-  const onFavorite = (borsa:Crypto) => {
+  const onFavorite = async(borsa:Crypto) => {
     setFav([...fav, borsa])
+    try {
+      await storeData("fav",fav);
+    } catch (error:any) {
+      console.error(error.message);
+    }finally{
+      const favList=await getData("fav");
+      console.log(favList);
+    }
+    
   }
 
   const onRemoveFavorite = (borsa:Crypto) => {
@@ -49,7 +58,7 @@ const Home = ({ navigation }:{navigation:any}) => {
           <Text style={styles.textStyle}>{item.Isim}</Text>
           <Text style={styles.rightText}>{item.Satis}</Text>
 
-          <Pressable onPress={() => addFavorite(item)}>
+          <Pressable onPress={() => onFavorite(item)}>
             <MaterialIcons
               name={ifExists(item) ? "favorite" : "favorite-outline"}
               size={25}
